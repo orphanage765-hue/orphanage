@@ -1,13 +1,12 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
-from typing import Optional
 
-# Find .env relative to this file
-ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
+
 
 class Settings(BaseSettings):
     # MongoDB
-    MONGODB_URL: str = "mongodb+srv://anandhakrishnanr868_db_user:w7atCTWvuAmB4Par@agromarket.amjhuf7.mongodb.net/"
+    MONGODB_URL: str = ""
     DATABASE_NAME: str = "orphanage_db"
 
     # JWT
@@ -15,11 +14,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
-    # Brevo API Configuration
-    # If Render Env Var fails, you can paste your key inside the quotes below as a last resort
-    BREVO_API_KEY: str = "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" 
-    
-    # Must match your verified Brevo sender: orphanage765@gmail.com
+    # Brevo (Sendinblue) Email API
+    BREVO_API_KEY: str = ""
     MAIL_FROM: str = "orphanage765@gmail.com"
 
     # Admin seed credentials
@@ -27,15 +23,13 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "Admin@1234"
 
     class Config:
-        env_file = str(ENV_FILE)
+        env_file = str(_ENV_FILE) if _ENV_FILE.exists() else None
         env_file_encoding = "utf-8"
-        extra = "ignore" 
+        extra = "ignore"
+
 
 settings = Settings()
 
-# CRITICAL FOR DEMO: Check logs to see if the key is actually loaded
-if settings.BREVO_API_KEY:
-    # Prints only the first 4 characters for security, helps confirm it's not empty
-    print(f"📧 Email System: Initialized with Key starting with '{settings.BREVO_API_KEY[:4]}...'")
-else:
-    print("📧 Email System: ❌ ERROR - BREVO_API_KEY is missing!")
+_ok = bool(settings.BREVO_API_KEY)
+print(f"📧 Brevo Email: {'✅ Configured' if _ok else '❌ Not configured — set BREVO_API_KEY in .env'}")
+print(f"🗄️  MongoDB:    {settings.MONGODB_URL[:50]}...")
