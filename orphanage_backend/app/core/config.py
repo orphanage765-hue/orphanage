@@ -1,9 +1,9 @@
 from pydantic_settings import BaseSettings
 from pathlib import Path
+from typing import Optional
 
-# Always find .env relative to this file's location, no matter where uvicorn is run from
+# Always find .env relative to this file's location
 ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
-
 
 class Settings(BaseSettings):
     # MongoDB
@@ -15,9 +15,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
-    # Resend API (replaces SMTP)
-    RESEND_API_KEY: str = ""
-    MAIL_FROM: str = "onboarding@resend.dev"  # Change to your verified domain email later
+    # Brevo API (Replaces Resend/SMTP to bypass Render port blocking)
+    BREVO_API_KEY: str = "" 
+    
+    # This MUST match your verified sender in Brevo (orphanage765@gmail.com)
+    MAIL_FROM: str = "orphanage765@gmail.com"
 
     # Admin seed credentials
     ADMIN_EMAIL: str = "admin@orphanageapp.com"
@@ -26,7 +28,14 @@ class Settings(BaseSettings):
     class Config:
         env_file = str(ENV_FILE)
         env_file_encoding = "utf-8"
-
+        # This allows the app to stay running even if variables are missing 
+        # (useful for debugging during the demo)
+        extra = "ignore" 
 
 settings = Settings()
-print(f"📧 Email configured: {'✅ Yes (Resend)' if settings.RESEND_API_KEY else '❌ No — set RESEND_API_KEY in .env'}")
+
+# Console log to verify status on Render startup
+if settings.BREVO_API_KEY:
+    print(f"📧 Email configured: ✅ Yes (Brevo API) - Sender: {settings.MAIL_FROM}")
+else:
+    print("📧 Email configured: ❌ No — Please set BREVO_API_KEY in Render Environment Variables")
