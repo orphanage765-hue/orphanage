@@ -1,28 +1,50 @@
-import resend
+import httpx
 from app.core.config import settings
 from typing import Optional
 
-
 def _is_email_configured() -> bool:
-    """Return True only if Resend API key is configured."""
-    return bool(settings.RESEND_API_KEY)
-
+    """Return True only if Brevo API key is configured."""
+    return bool(settings.BREVO_API_KEY)
 
 async def _send(subject: str, recipients: list, body: str):
     if not _is_email_configured():
-        print(f"⚠️  Resend API key not configured — skipping '{subject}' to {recipients}")
+        print(f"⚠️  Brevo API key not configured — skipping '{subject}' to {recipients}")
         return
+    
+    # Brevo API Endpoint
+    url = "https://api.brevo.com/v3/smtp/email"
+    
+    # Brevo requires recipients in a list of dictionaries
+    to_list = [{"email": email} for email in recipients]
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    payload = {
+        "sender": {
+            "name": "KindConnect", 
+            "email": settings.MAIL_FROM
+        },
+        "to": to_list,
+        "subject": subject,
+        "htmlContent": body # Brevo uses 'htmlContent' specifically
+    }
+
     try:
-        resend.api_key = settings.RESEND_API_KEY
-        resend.Emails.send({
-            "from": settings.MAIL_FROM,
-            "to": recipients,
-            "subject": subject,
-            "html": body,
-        })
-        print(f"✅ Email sent: '{subject}' to {recipients}")
+        # Using httpx for async request (standard in FastAPI)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload)
+            
+        if response.status_code in [200, 201, 202]:
+            print(f"✅ Brevo Email sent: '{subject}' to {recipients}")
+        else:
+            print(f"⚠️  Brevo API Error: {response.status_code} - {response.text}")
+            
     except Exception as e:
-        print(f"⚠️  Resend email failed: {e}")
+        print(f"⚠️  Connection to Brevo failed: {e}")
 
 
 def _wrap(content: str, header_color: str = "#dc2626", header_text: str = "KindConnect") -> str:
