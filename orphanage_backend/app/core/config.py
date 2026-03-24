@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # Brevo API Configuration
     # If Render Env Var fails, you can paste your key inside the quotes below as a last resort
-    BREVO_API_KEY: str = "xsmtpsib-6ad750f08cfce7b699df9c80b870d9f49557ce51834739a54b28d32f296178e2-CqwvM0TxvERPX2HU" 
+    BREVO_API_KEY: str = "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" 
     
     # Must match your verified Brevo sender: orphanage765@gmail.com
     MAIL_FROM: str = "orphanage765@gmail.com"
