@@ -7,7 +7,7 @@ ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 class Settings(BaseSettings):
     # MongoDB
-    MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_URL: str = "mongodb+srv://anandhakrishnanr868_db_user:w7atCTWvuAmB4Par@agromarket.amjhuf7.mongodb.net/"
     DATABASE_NAME: str = "orphanage_db"
 
     # JWT
@@ -15,12 +15,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
-    # Gmail SMTP
-    MAIL_USERNAME: str = ""
-    MAIL_PASSWORD: str = ""
-    MAIL_FROM: str = ""
-    MAIL_SERVER: str = "smtp.gmail.com"
-    MAIL_PORT: int = 587
+    # Resend API (replaces SMTP)
+    RESEND_API_KEY: str = ""
+    MAIL_FROM: str = "onboarding@resend.dev"  # Change to your verified domain email later
 
     # Admin seed credentials
     ADMIN_EMAIL: str = "admin@orphanageapp.com"
@@ -32,4 +29,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-print(f"📧 Email configured: {'✅ Yes' if settings.MAIL_FROM and '@' in settings.MAIL_FROM else '❌ No — check .env'}")
+print(f"📧 Email configured: {'✅ Yes (Resend)' if settings.RESEND_API_KEY else '❌ No — set RESEND_API_KEY in .env'}")
