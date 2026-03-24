@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pathlib import Path
 from typing import Optional
 
-# Always find .env relative to this file's location
+# Find .env relative to this file
 ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 class Settings(BaseSettings):
@@ -15,10 +15,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
-    # Brevo API (Replaces Resend/SMTP to bypass Render port blocking)
-    BREVO_API_KEY: str = "" 
+    # Brevo API Configuration
+    # If Render Env Var fails, you can paste your key inside the quotes below as a last resort
+    BREVO_API_KEY: str = "xsmtpsib-6ad750f08cfce7b699df9c80b870d9f49557ce51834739a54b28d32f296178e2-CqwvM0TxvERPX2HU" 
     
-    # This MUST match your verified sender in Brevo (orphanage765@gmail.com)
+    # Must match your verified Brevo sender: orphanage765@gmail.com
     MAIL_FROM: str = "orphanage765@gmail.com"
 
     # Admin seed credentials
@@ -28,14 +29,13 @@ class Settings(BaseSettings):
     class Config:
         env_file = str(ENV_FILE)
         env_file_encoding = "utf-8"
-        # This allows the app to stay running even if variables are missing 
-        # (useful for debugging during the demo)
         extra = "ignore" 
 
 settings = Settings()
 
-# Console log to verify status on Render startup
+# CRITICAL FOR DEMO: Check logs to see if the key is actually loaded
 if settings.BREVO_API_KEY:
-    print(f"📧 Email configured: ✅ Yes (Brevo API) - Sender: {settings.MAIL_FROM}")
+    # Prints only the first 4 characters for security, helps confirm it's not empty
+    print(f"📧 Email System: Initialized with Key starting with '{settings.BREVO_API_KEY[:4]}...'")
 else:
-    print("📧 Email configured: ❌ No — Please set BREVO_API_KEY in Render Environment Variables")
+    print("📧 Email System: ❌ ERROR - BREVO_API_KEY is missing!")
