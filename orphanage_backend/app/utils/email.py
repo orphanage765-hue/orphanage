@@ -1,37 +1,28 @@
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+import resend
 from app.core.config import settings
 from typing import Optional
 
 
 def _is_email_configured() -> bool:
-    """Return True only if all required email settings are filled in."""
-    return bool(
-        settings.MAIL_USERNAME
-        and settings.MAIL_PASSWORD
-        and settings.MAIL_FROM
-        and "@" in settings.MAIL_FROM
-    )
-
-
-def _get_conf():
-    return ConnectionConfig(
-        MAIL_USERNAME=settings.MAIL_USERNAME,
-        MAIL_PASSWORD=settings.MAIL_PASSWORD,
-        MAIL_FROM=settings.MAIL_FROM,
-        MAIL_PORT=settings.MAIL_PORT,
-        MAIL_SERVER=settings.MAIL_SERVER,
-        MAIL_STARTTLS=True,
-        MAIL_SSL_TLS=False,
-        USE_CREDENTIALS=True,
-    )
+    """Return True only if Resend API key is configured."""
+    return bool(settings.RESEND_API_KEY)
 
 
 async def _send(subject: str, recipients: list, body: str):
     if not _is_email_configured():
-        print(f"⚠️  Email not configured — skipping '{subject}' to {recipients}")
+        print(f"⚠️  Resend API key not configured — skipping '{subject}' to {recipients}")
         return
-    msg = MessageSchema(subject=subject, recipients=recipients, body=body, subtype=MessageType.html)
-    await FastMail(_get_conf()).send_message(msg)
+    try:
+        resend.api_key = settings.RESEND_API_KEY
+        resend.Emails.send({
+            "from": settings.MAIL_FROM,
+            "to": recipients,
+            "subject": subject,
+            "html": body,
+        })
+        print(f"✅ Email sent: '{subject}' to {recipients}")
+    except Exception as e:
+        print(f"⚠️  Resend email failed: {e}")
 
 
 def _wrap(content: str, header_color: str = "#dc2626", header_text: str = "KindConnect") -> str:
